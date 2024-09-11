@@ -1,4 +1,4 @@
-#Truy cập thư viện
+# Truy cập thư viện
 
 import pandas as pd
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 LDT = pd.read_excel('D:/NCKH/linedata.xlsx')
 BDT = pd.read_excel('D:/NCKH/busdata.xlsx')
 
-#Lưu các giá trị từ excel
+# Lưu các giá trị từ excel
 typebus = BDT['loainut']
 chieudai = LDT['l'] * 10**-3
 r = LDT['r'] * chieudai
@@ -21,12 +21,12 @@ cosphi = BDT['cosphi']
 dp0 = BDT['dp0'] * 10**-3
 dq0 = BDT['dq0'] * 10**-3
 
-#Khởi tạo dữ liệu ban đầu
+# Khởi tạo dữ liệu ban đầu
 Scb = 100              #Đơn vị MWA
 Ucb = BDT.iloc[0, 3]   #Lấy bằng Uđm, đơn vị KV
 DC = 100               #Giá trị lặp ban đầu
 esp = 0.001            #Sai số so sánh
-#Tính toán các giá trị
+# Tính toán các giá trị
 U = BDT['u']/Ucb
 zb = rb + 1j*xb
 P = Sphutai * cosphi
@@ -55,7 +55,7 @@ Q = Q/Scb
 Icb = Scb/(np.sqrt(3)*Ucb)
 Zcb = Ucb**2/Scb
 buoclap = 0
-###Chương trình con Ybus
+# Chương trình con Ybus
 # Khởi tạo ma trận Ybus với kích thước n x n và giá trị ban đầu là 0 + 0j
 Ybus = np.zeros((n, n), dtype=complex)
 # Tính toán phần tử ngoài đường chéo chính của Ybus
@@ -116,24 +116,24 @@ for e in range(2, n):
         Qcho[g] = -Q[e]
         f += 1
         g += 1
-#MAIN PROGRAM#
+# MAIN PROGRAM#
 while DC>esp:
     buoclap +=1
-    # CHƯƠNG TRÌNH CON TÍNH ĐỘ LỆCH CÔNG SUẤT
-    # Bên trong vòng lặp while
-    # Tạo mảng P1 với kích thước n x 1
+# CHƯƠNG TRÌNH CON TÍNH ĐỘ LỆCH CÔNG SUẤT
+# Bên trong vòng lặp while
+# Tạo mảng P1 với kích thước n x 1
     P1 = np.zeros((n, 1))
-    # Tính ràng buộc công suất Pi
+# Tính ràng buộc công suất Pi
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         P1[e] = 0
         for f in range(n):
             P1[e] += U[e] * U[f] * Ybus[e, f] * np.cos(angles[e, f] - d[e] + d[f])
-    # Bỏ phần tử P1[0] (tương đương P1(1) = [] trong MATLAB)
+ # Bỏ phần tử P1[0] (tương đương P1(1) = [] trong MATLAB)
     P1 = P1[1:]  # Vì P1[1] bỏ qua nút nguồn, giữ lại từ phần tử 2 trở đi
-    # Tạo mảng Q1 với kích thước (n-1-m) x 1
+# Tạo mảng Q1 với kích thước (n-1-m) x 1
     Q1 = np.zeros((n - 1 - m, 1))
     g = 0
-    # Tính ràng buộc công suất Qi
+# Tính ràng buộc công suất Qi
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         if typebus[e] == 3:  # Xác nhận nút PQ
             Q2 = 0
@@ -141,50 +141,50 @@ while DC>esp:
                 Q2 -= U[e] * U[f] * Ybus[e, f] * np.sin(angles[e, f] - d[e] + d[f])
             Q1[g] = Q2
             g += 1
-    # Tính độ lệch công suất
+# Tính độ lệch công suất
     DP = Pcho - P1.flatten()  # Chuyển mảng 2D thành 1D để trừ
     DQ = Qcho - Q1.flatten()
-    # Ghép DP và DQ thành DC1
+# Ghép DP và DQ thành DC1
     DC1 = np.concatenate((DP, DQ), axis=0)
-    #MA TRẬN JACOBI#
-    # Tạo ma trận J1 với kích thước n x n
+# MA TRẬN JACOBI#
+ # Tạo ma trận J1 với kích thước n x n
     J1 = np.zeros((n, n))
-    # Phần tử ngoài đường chéo
+# Phần tử ngoài đường chéo
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         for f in range(2, n):
             if f != e:
                 J1[e, f] = -U[e] * U[f] * Ybus[e, f] * np.sin(angles[e, f] - d[e] + d[f])
-    # Phần tử trên đường chéo
+# Phần tử trên đường chéo
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         J1[e, e] = 0
         for f in range(n):
             if f != e:
                 J1[e, e] += U[e] * U[f] * Ybus[e, f] * np.sin(angles[e, f] - d[e] + d[f])
-    # Tạo ma trận J2 với kích thước n x n
+# Tạo ma trận J2 với kích thước n x n
     J2 = np.zeros((n, n))
-    # Phần tử ngoài đường chéo
+ # Phần tử ngoài đường chéo
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         for f in range(2, n):
             if f != e and typebus[f] == 3:  # Kiểm tra điều kiện ngoại trừ đường chéo và typebus[f] == 3
                 J2[e, f] = U[e] * U[f] * Ybus[e, f] * np.cos(angles[e, f] - d[e] + d[f])
-    # Phần tử trên đường chéo
+# Phần tử trên đường chéo
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         if typebus[e] == 3:  # Kiểm tra typebus[e] == 3
             J2[e, e] = 0
             for f in range(n):
                 if f != e:
                     J2[e, e] += U[e] * U[f] * Ybus[e, f] * np.cos(angles[e, f] - d[e] + d[f])
-            # Cộng thêm phần tử trên đường chéo
+# Cộng thêm phần tử trên đường chéo
             J2[e, e] += 2 * U[e] * U[e] * Ybus[e, e] * np.cos(angles[e, e])
-    # Tạo ma trận J3 với kích thước n x n
+# Tạo ma trận J3 với kích thước n x n
     J3 = np.zeros((n, n))
-    # Phần tử ngoài đường chéo
+ # Phần tử ngoài đường chéo
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         if typebus[e] == 3:  # Kiểm tra điều kiện typebus[e] == 3
             for f in range(2, n):
                 if f != e:  # Ngoại trừ đường chéo
                     J3[e, f] = -U[e] * U[f] * Ybus[e, f] * np.cos(angles[e, f] - d[e] + d[f])
-    # Phần tử trên đường chéo
+# Phần tử trên đường chéo
     for e in range(2, n):  # Bắt đầu từ 2, bỏ qua nút nguồn
         if typebus[e] == 3:  # Kiểm tra điều kiện typebus[e] == 3
             J3[e, e] = 0
