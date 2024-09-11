@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-#Nhập giá trị từ excel
+# Nhập giá trị từ excel
 LDT = pd.read_excel('D:/NCKH/linedata.xlsx')
 BDT = pd.read_excel('D:/NCKH/busdata.xlsx')
 
